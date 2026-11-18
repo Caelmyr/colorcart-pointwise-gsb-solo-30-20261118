@@ -3,6 +3,7 @@ from flask import request,jsonify,render_template,send_file
 from image_lab.validation import Invalid
 from .storage import Storage
 from .core import decode,demo,create,edit,history,render,summary,png,swatch_sheet,validate
+from .auto import plan as auto_plan,apply as auto_apply,render_plan
 
 def install(app,root):
     store=Storage(root);app.extensions['colorcart']=store
@@ -36,6 +37,13 @@ def install(app,root):
     @app.post('/colorcart/patterns/<key>/history')
     def colorcart_history(key):
         b=body();return response(store.change(key,b.get('revision'),lambda p:history(p,b.get('action'))))
+    @app.post('/colorcart/patterns/<key>/auto/plan')
+    def colorcart_auto_plan(key):
+        b=body();p=store.pattern(key);result=auto_plan(p,b)
+        return jsonify(plan=result,preview=render_plan(p,result).hex(),summary=summary(p))
+    @app.post('/colorcart/patterns/<key>/auto/apply')
+    def colorcart_auto_apply(key):
+        b=body();return response(store.change(key,b.get('revision'),lambda p:auto_apply(p,b.get('plan'))))
     @app.post('/colorcart/patterns/<key>/duplicate')
     def colorcart_duplicate(key):
         p=store.pattern(key);p['name']+=' 副本';p['undo']=[];p['redo']=[];return response(store.save_pattern(p,dict(pattern_id=key,revision=p['revision'])))
