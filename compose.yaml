@@ -1,0 +1,14 @@
+name: solo33-colorcart
+services:
+  web:
+    build: .
+    image: solo33-colorcart:1.0
+    network_mode: bridge
+    ports: ["18933:18933"]
+    volumes: ["colorcart-data:/data"]
+    environment:
+      COLORCART_DATA_DIR: /data
+      PORT: 18933
+    restart: unless-stopped
+volumes:
+  colorcart-data:
